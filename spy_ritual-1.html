@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SPY PRE-VUELO">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="SPY PRE-VUELO">
+<meta name="theme-color" content="#0a0a0f">
+<title>SPY · PRE-VUELO ✈️</title>
+<link rel="manifest" href="data:application/json,{
+  &quot;name&quot;: &quot;SPY · PRE-VUELO&quot;,
+  &quot;short_name&quot;: &quot;PRE-VUELO&quot;,
+  &quot;display&quot;: &quot;standalone&quot;,
+  &quot;background_color&quot;: &quot;%230a0a0f&quot;,
+  &quot;theme_color&quot;: &quot;%230a0a0f&quot;,
+  &quot;start_url&quot;: &quot;.&quot;
+}">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --accent-bear: #ef4444;
+    --accent-bull: #22c55e;
+    --accent-neutral: #eab308;
+    --accent-blue: #6366f1;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --key: #a78bfa;
+    --macro: #f97316;
+    --check-done: #22c55e;
+    --radius: 10px;
+    --font: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    padding: 0 0 80px 0;
+    font-size: 14px;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 16px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .header-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--text);
+  }
+  .header-title span { color: var(--accent-blue); }
+  .header-date {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+  .progress-bar-wrap {
+    height: 3px;
+    background: var(--border);
+    border-radius: 99px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-bull));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* MAIN CONTENT */
+  .content { padding: 12px 12px 0; }
+
+  /* GAMMA REGIME */
+  .gamma-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .card-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .gamma-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .gamma-box {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .gamma-box .label { font-size: 10px; color: var(--text-muted); letter-spacing: 0.1em; margin-bottom: 4px; }
+  .gamma-box .symbol { font-size: 22px; font-weight: 300; color: var(--text-dim); }
+  .gamma-box.active-neg { border-color: var(--accent-bear); background: rgba(239,68,68,0.08); }
+  .gamma-box.active-neg .symbol { color: var(--accent-bear); }
+  .gamma-box.active-pos { border-color: var(--accent-bull); background: rgba(34,197,94,0.08); }
+  .gamma-box.active-pos .symbol { color: var(--accent-bull); }
+  .gamma-info {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    padding: 8px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  .gamma-info b { color: var(--accent-bear); }
+  .gamma-info b.pos { color: var(--accent-bull); }
+
+  /* LEVELS GRID */
+  .levels-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .level-item { }
+  .level-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .level-label .dot {
+    width: 6px; height: 6px; border-radius: 50%; display: inline-block;
+  }
+  .dot-call { background: var(--accent-bull); }
+  .dot-put { background: var(--accent-bear); }
+  .dot-flip { background: var(--accent-neutral); }
+  .dot-dark { background: var(--accent-blue); }
+
+  .level-input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  .level-input:focus { border-color: var(--accent-blue); }
+  .level-input::placeholder { color: var(--text-muted); font-size: 13px; font-weight: 400; }
+
+  /* BIAS */
+  .bias-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  .bias-btn {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 4px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    color: var(--text-dim);
+    user-select: none;
+  }
+  .bias-btn .icon { font-size: 16px; display: block; margin-bottom: 3px; }
+  .bias-btn.active-bear { border-color: var(--accent-bear); background: rgba(239,68,68,0.12); color: var(--accent-bear); }
+  .bias-btn.active-neutral { border-color: var(--accent-neutral); background: rgba(234,179,8,0.12); color: var(--accent-neutral); }
+  .bias-btn.active-bull { border-color: var(--accent-bull); background: rgba(34,197,94,0.12); color: var(--accent-bull); }
+
+  /* SECTIONS */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  .section-time {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .section-arrow {
+    font-size: 10px;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+  }
+  .section.open .section-arrow { transform: rotate(90deg); }
+  .section-body {
+    display: none;
+    border-top: 1px solid var(--border);
+    padding: 10px 14px 14px;
+  }
+  .section.open .section-body { display: block; }
+
+  /* SECTION COLORS */
+  .s1 .section-num { background: rgba(249,115,22,0.15); color: var(--macro); }
+  .s1 .section-title { color: var(--macro); }
+  .s2 .section-num { background: rgba(99,102,241,0.15); color: var(--accent-blue); }
+  .s2 .section-title { color: var(--accent-blue); }
+  .s3 .section-num { background: rgba(167,139,250,0.15); color: var(--key); }
+  .s3 .section-title { color: var(--key); }
+  .s4 .section-num { background: rgba(34,197,94,0.15); color: var(--accent-bull); }
+  .s4 .section-title { color: var(--accent-bull); }
+  .s5 .section-num { background: rgba(234,179,8,0.15); color: var(--accent-neutral); }
+  .s5 .section-title { color: var(--accent-neutral); }
+  .s6 .section-num { background: rgba(239,68,68,0.15); color: var(--accent-bear); }
+  .s6 .section-title { color: var(--accent-bear); }
+
+  /* CHECKLIST ITEMS */
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.2s;
+  }
+  .check-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .check-item:first-child { padding-top: 0; }
+  .check-box {
+    width: 20px; height: 20px; min-width: 20px;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    margin-top: 1px;
+  }
+  .check-item.done .check-box {
+    background: var(--check-done);
+    border-color: var(--check-done);
+  }
+  .check-item.done .check-box::after {
+    content: '✓';
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .check-item.done .check-text { color: var(--text-muted); text-decoration: line-through; }
+  .check-text {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text-dim);
+  }
+  .check-text .tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .tag-key { background: rgba(167,139,250,0.2); color: var(--key); }
+  .tag-macro { background: rgba(249,115,22,0.2); color: var(--macro); }
+
+  /* KILLERS */
+  .killers-card {
+    background: rgba(239,68,68,0.05);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .killers-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--accent-bear);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .killer-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(239,68,68,0.1);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .killer-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .killer-x {
+    width: 16px; height: 16px; min-width: 16px;
+    background: rgba(239,68,68,0.2);
+    color: var(--accent-bear);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+  }
+
+  /* RESET */
+  .reset-btn {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    margin-bottom: 10px;
+  }
+  .reset-btn:active { background: rgba(255,255,255,0.08); }
+
+  /* CONFIRMATION COUNTER */
+  .confirm-counter {
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .confirm-label { font-size: 11px; color: var(--text-muted); }
+  .confirm-count {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: 'SF Mono', monospace;
+  }
+  .confirm-count.ready { color: var(--accent-bull); }
+  .confirm-count.not-ready { color: var(--text-muted); }
+  .confirm-note { font-size: 10px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="header-title">SPY <span>·</span> PRE-VUELO ✈️</div>
+    <div class="header-date" id="today-date"></div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-fill"></div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- GAMMA REGIME -->
+  <div class="gamma-card">
+    <div class="card-label">⚡ GAMMA REGIME — LO PRIMERO DEL DÍA</div>
+    <div class="gamma-grid">
+      <div class="gamma-box" id="gbox-neg" onclick="selectGamma('neg')">
+        <div class="label">GAMMA</div>
+        <div class="symbol">−</div>
+      </div>
+      <div class="gamma-box" id="gbox-pos" onclick="selectGamma('pos')">
+        <div class="label">GAMMA</div>
+        <div class="symbol">+</div>
+      </div>
+    </div>
+    <div class="gamma-info">
+      <b>Gamma −</b> → MMs aceleran cualquier movimiento. Breakouts más violentos.<br>
+      <b class="pos">Gamma +</b> → MMs amortiguan. Precio rota entre niveles.
+    </div>
+
+    <div class="levels-grid">
+      <div class="level-item">
+        <div class="level-label"><span class="dot dot-call"></span> CALL WALL</div>
+        <input class="level-input" id="lvl-call" type="number" placeholder="$000" inputmode="decimal">
+      </div>
+      <div class="level-item">
+        <div class="level-label"><span class="dot dot-put"></span> PUT TARGET (1ER GEX−)</div>
+        <input class="level-input" id="lvl-put" type="number" placeholder="$000" inputmode="decimal">
+      </div>
+      <div class="level-item">
+        <div class="level-label"><span class="dot dot-flip"></span> GAMMA FLIP</div>
+        <input class="level-input" id="lvl-flip" type="number" placeholder="$000" inputmode="decimal">
+      </div>
+      <div class="level-item">
+        <div class="level-label"><span class="dot dot-dark"></span> DARK POOL KEY</div>
+        <input class="level-input" id="lvl-dark" type="number" placeholder="$000" inputmode="decimal">
+      </div>
+    </div>
+
+    <div class="card-label" style="margin-top:10px; margin-bottom:6px;">BIAS DEL DÍA</div>
+    <div class="bias-row">
+      <div class="bias-btn" id="bias-bear" onclick="selectBias('bear')">
+        <span class="icon">🐻</span>BAJISTA
+      </div>
+      <div class="bias-btn" id="bias-neutral" onclick="selectBias('neutral')">
+        <span class="icon">⚡</span>NEUTRO
+      </div>
+      <div class="bias-btn" id="bias-bull" onclick="selectBias('bull')">
+        <span class="icon">🐂</span>ALCISTA
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRMATIONS COUNTER -->
+  <div class="confirm-counter">
+    <div>
+      <div class="confirm-label">CONFIRMACIONES</div>
+      <div class="confirm-note">Mínimo 3 para entrar</div>
+    </div>
+    <div class="confirm-count not-ready" id="conf-count">0 / 4</div>
+  </div>
+
+  <!-- SECTION 1: PRE-MARKET -->
+  <div class="section s1 open" id="sec1">
+    <div class="section-header" onclick="toggleSection('sec1')">
+      <div class="section-header-left">
+        <div class="section-num">1</div>
+        <div class="section-title">PRE-MARKET</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="section-time">7:00–8:30 AM CT</div>
+        <div class="section-arrow">▶</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="check-item" onclick="toggleCheck(this)" data-conf="true">
+        <div class="check-box"></div>
+        <div class="check-text"><span class="tag tag-macro">MACRO</span>Dato macro del día — resultado vs consenso. CPI/Fed/Jobs: sorpresa >0.2% = esperar Tide post-dato</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)" data-conf="true">
+        <div class="check-box"></div>
+        <div class="check-text"><span class="tag tag-key">KEY</span>Gamma Heat Zones — confirmar régimen +/−. ¿Precio abre sobre o bajo Gamma Flip?</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)" data-conf="true">
+        <div class="check-box"></div>
+        <div class="check-text"><span class="tag tag-key">KEY</span>GEX By Strike — Call Wall, Put Wall, primer strike GEX− bajo spot. El primer strike GEX negativo = target put real.</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)" data-conf="true">
+        <div class="check-box"></div>
+        <div class="check-text"><span class="tag tag-key">KEY</span>Cambios OI overnight en UW. ¿Qué strike acumuló OI nuevo? = institucionales mostrando intención</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Dark Pool levels (Quant Data) — anotar nivel clave. Define stops y targets reales.</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">SMC 30m — estructura overnight. ¿BOS activo? ¿OB nuevo formado en pre? ¿Weak Low/High vigente?</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: APERTURA -->
+  <div class="section s2" id="sec2">
+    <div class="section-header" onclick="toggleSection('sec2')">
+      <div class="section-header-left">
+        <div class="section-num">2</div>
+        <div class="section-title">APERTURA</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="section-time">8:30–8:45 AM CT</div>
+        <div class="section-arrow">▶</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Market Tide — dirección NCP y NPP en apertura. ¿Confirma bias pre-market?</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Holdings Net Flow — institucionales. ¿Flujo consistente con bias?</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">SPY ETF Net Flow — solo confirmación. ¿Alineado con Holdings?</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">No operar primeros 15 min (8:30–8:45 AM CT). Solo observar ORB formándose.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: CONFIRMACIÓN -->
+  <div class="section s3" id="sec3">
+    <div class="section-header" onclick="toggleSection('sec3')">
+      <div class="section-header-left">
+        <div class="section-num">3</div>
+        <div class="section-title">CONFIRMACIÓN</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="section-time">Después 8:45 AM CT</div>
+        <div class="section-arrow">▶</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">SMC 5m — ¿BOS o CHoCH alineado con bias? ¿Order Block identificado?</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Net Volume — flujo institucional >-150K = flow domina sobre MVC.</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Tide confirmando dirección post-10:30 AM CT. Más confiable después de primera hora.</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">MVC / Charm Center revisado. ¿Dónde intenta pinear precio hoy?</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: ENTRADA -->
+  <div class="section s4" id="sec4">
+    <div class="section-header" onclick="toggleSection('sec4')">
+      <div class="section-header-left">
+        <div class="section-num">4</div>
+        <div class="section-title">ENTRADA</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="section-time">Con 3+ confirmaciones</div>
+        <div class="section-arrow">▶</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Ventana: después 9:45 AM CT (preferible 10:00–10:30 AM CT)</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Pullback a VWAP o Order Block en 5m confirmado en 15m</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Stop definido ANTES de entrar. Nivel claro en Dark Pool o SMC.</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Target = primer strike GEX negativo bajo spot (ya anotado arriba)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: GESTIÓN -->
+  <div class="section s5" id="sec5">
+    <div class="section-header" onclick="toggleSection('sec5')">
+      <div class="section-header-left">
+        <div class="section-num">5</div>
+        <div class="section-title">GESTIÓN</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="section-time">En trade</div>
+        <div class="section-arrow">▶</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Zona 12:00–2:00 PM CT = theta-burn de MMs. Evitar nuevas entradas.</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">No cerrar 1DTE estructuralmente válido solo por volatilidad intraday.</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Ventana óptima para entradas EOD: 2:45–3:15 PM CT (PIN move)</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Monitorear Tide en tiempo real. Si contradice posición: reevaluar, no paniquear.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: CIERRE -->
+  <div class="section s6" id="sec6">
+    <div class="section-header" onclick="toggleSection('sec6')">
+      <div class="section-header-left">
+        <div class="section-num">6</div>
+        <div class="section-title">CIERRE DEL DÍA</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="section-time">2:00–3:00 PM CT</div>
+        <div class="section-arrow">▶</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">¿Se respetó el plan? Anotar en bitácora: entrada, salida, razón.</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">¿GEX o Tide se leyó mal? Registrar error para ajustar framework.</div>
+      </div>
+      <div class="check-item" onclick="toggleCheck(this)">
+        <div class="check-box"></div>
+        <div class="check-text">Posiciones 1DTE abiertas: ¿estructura sigue válida al cierre?</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PSICOLOGÍA DEL PILOTO -->
+  <div class="section" style="border-color: rgba(99,102,241,0.3);" id="sec-psych">
+    <div class="section-header" onclick="toggleSection('sec-psych')">
+      <div class="section-header-left">
+        <div class="section-num" style="background:rgba(99,102,241,0.15);color:#818cf8;">🧠</div>
+        <div class="section-title" style="color:#818cf8;">PSICOLOGÍA DEL PILOTO</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="section-time">Antes de volar</div>
+        <div class="section-arrow">▶</div>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div style="margin-bottom:14px;">
+        <div class="level-label" style="margin-bottom:8px;">✈️ NIVEL DE CALMA HOY (1–10)</div>
+        <div id="calm-grid" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        <div id="calm-warning" style="display:none;margin-top:8px;padding:8px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;font-size:12px;color:var(--accent-bear);">
+          ⚠️ Calma menor de 6 — considera NO operar hoy
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div class="level-label" style="margin-bottom:8px;">🔍 ANTES DEL TRADE</div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text">¿Dormí bien? Sin fatiga mental</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text">¿Estoy entrando por setup o por FOMO?</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text">¿Tengo presión de recuperar algo de ayer?</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text">Regla 100/50 activa — cerrar mitad en +100% SIN NEGOCIAR</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15);border-radius:8px;padding:10px;margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:#818cf8;margin-bottom:8px;">⚡ REGLAS DE ORO</div>
+        <div style="font-size:12px;color:var(--text-dim);line-height:1.8;">
+          • El profit no es tuyo hasta que cierras<br>
+          • La codicia no te hace rico, te hace pobre<br>
+          • +100% → cierra mitad. Siempre. Sin excepción<br>
+          • Target = SMC Weak Low, no Abs Gamma en 1DTE<br>
+          • El mercado no te debe nada
+        </div>
+      </div>
+
+      <div>
+        <div class="level-label" style="margin-bottom:8px;">📋 BITÁCORA POST-TRADE</div>
+        <textarea id="journal-entry" placeholder="¿Qué pasó hoy? ¿Seguí las reglas? ¿Qué sentí cuando el trade estaba en +100%? ¿Por qué no cerré o sí cerré?" style="width:100%;min-height:100px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:13px;line-height:1.5;resize:none;outline:none;font-family:var(--font);" oninput="saveJournal()"></textarea>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">Se guarda automáticamente durante la sesión</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- KILLERS -->
+  <div class="killers-card">
+    <div class="killers-title">✕ NO ENTRAR SI ALGUNA APLICA</div>
+    <div class="killer-item"><div class="killer-x">✕</div>Antes de 8:45 AM CT</div>
+    <div class="killer-item"><div class="killer-x">✕</div>Dato macro en menos de 30 min</div>
+    <div class="killer-item"><div class="killer-x">✕</div>Zona 12:00–2:00 PM CT</div>
+    <div class="killer-item"><div class="killer-x">✕</div>Tide y GEX contradicen</div>
+    <div class="killer-item"><div class="killer-x">✕</div>Menos de 3 confirmaciones</div>
+    <div class="killer-item"><div class="killer-x">✕</div>Sin stop definido</div>
+    <div class="killer-item"><div class="killer-x">✕</div>Cerrar 1DTE válido solo por volatilidad</div>
+  </div>
+
+  <!-- RESET -->
+  <button class="reset-btn" onclick="resetAll()">↺ &nbsp; RESET DEL DÍA</button>
+
+</div>
+
+<script>
+  // Date
+  const days = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const now = new Date();
+  document.getElementById('today-date').textContent = `${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()}`;
+
+  // Section toggle
+  function toggleSection(id) {
+    const sec = document.getElementById(id);
+    sec.classList.toggle('open');
+  }
+
+  // Check toggle
+  function toggleCheck(el) {
+    el.classList.toggle('done');
+    updateProgress();
+    updateConfirmations();
+  }
+
+  // Progress
+  function updateProgress() {
+    const all = document.querySelectorAll('.check-item');
+    const done = document.querySelectorAll('.check-item.done');
+    const pct = all.length ? (done.length / all.length) * 100 : 0;
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  // Confirmation counter (items with data-conf="true" in section 1)
+  function updateConfirmations() {
+    const confItems = document.querySelectorAll('[data-conf="true"]');
+    const confDone = document.querySelectorAll('[data-conf="true"].done');
+    const count = confDone.length;
+    const el = document.getElementById('conf-count');
+    el.textContent = count + ' / ' + confItems.length;
+    el.className = 'confirm-count ' + (count >= 3 ? 'ready' : 'not-ready');
+  }
+
+  // Gamma selection
+  function selectGamma(type) {
+    document.getElementById('gbox-neg').classList.remove('active-neg');
+    document.getElementById('gbox-pos').classList.remove('active-pos');
+    if (type === 'neg') document.getElementById('gbox-neg').classList.add('active-neg');
+    else document.getElementById('gbox-pos').classList.add('active-pos');
+    saveState();
+  }
+
+  // Bias selection
+  function selectBias(type) {
+    ['bear','neutral','bull'].forEach(b => {
+      document.getElementById('bias-' + b).classList.remove('active-bear','active-neutral','active-bull');
+    });
+    document.getElementById('bias-' + type).classList.add('active-' + type);
+    saveState();
+  }
+
+  // Save/load state in sessionStorage (persists during session)
+  function saveState() {
+    const state = {
+      gamma: document.getElementById('gbox-neg').classList.contains('active-neg') ? 'neg' :
+             document.getElementById('gbox-pos').classList.contains('active-pos') ? 'pos' : null,
+      bias: ['bear','neutral','bull'].find(b => document.getElementById('bias-'+b).classList.contains('active-'+b)) || null,
+      levels: {
+        call: document.getElementById('lvl-call').value,
+        put: document.getElementById('lvl-put').value,
+        flip: document.getElementById('lvl-flip').value,
+        dark: document.getElementById('lvl-dark').value,
+      },
+      checks: Array.from(document.querySelectorAll('.check-item')).map(el => el.classList.contains('done'))
+    };
+    try { sessionStorage.setItem('spy_ritual', JSON.stringify(state)); } catch(e){}
+  }
+
+  function loadState() {
+    try {
+      const raw = sessionStorage.getItem('spy_ritual');
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (s.gamma) selectGamma(s.gamma);
+      if (s.bias) selectBias(s.bias);
+      if (s.levels) {
+        if (s.levels.call) document.getElementById('lvl-call').value = s.levels.call;
+        if (s.levels.put) document.getElementById('lvl-put').value = s.levels.put;
+        if (s.levels.flip) document.getElementById('lvl-flip').value = s.levels.flip;
+        if (s.levels.dark) document.getElementById('lvl-dark').value = s.levels.dark;
+      }
+      if (s.checks) {
+        const items = document.querySelectorAll('.check-item');
+        s.checks.forEach((done, i) => { if (done && items[i]) items[i].classList.add('done'); });
+      }
+      updateProgress();
+      updateConfirmations();
+    } catch(e){}
+  }
+
+  // Auto-save on level input
+  ['lvl-call','lvl-put','lvl-flip','lvl-dark'].forEach(id => {
+    document.getElementById(id).addEventListener('input', saveState);
+  });
+
+  // Reset
+  function resetAll() {
+    if (!confirm('¿Reset completo del día?')) return;
+    document.querySelectorAll('.check-item').forEach(el => el.classList.remove('done'));
+    ['gbox-neg','gbox-pos'].forEach(id => {
+      document.getElementById(id).classList.remove('active-neg','active-pos');
+    });
+    ['bear','neutral','bull'].forEach(b => {
+      document.getElementById('bias-'+b).classList.remove('active-bear','active-neutral','active-bull');
+    });
+    ['lvl-call','lvl-put','lvl-flip','lvl-dark'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('journal-entry').value = '';
+    for (let i = 1; i <= 10; i++) {
+      const btn = document.getElementById('calm-' + i);
+      if (btn) { btn.style.background=''; btn.style.color='var(--text-muted)'; btn.style.borderColor='var(--border)'; }
+    }
+    document.getElementById('calm-warning').style.display = 'none';
+    try { sessionStorage.clear(); } catch(e){}
+    updateProgress();
+    updateConfirmations();
+  }
+
+  // Build calm grid
+  const calmGrid = document.getElementById('calm-grid');
+  for (let n = 1; n <= 10; n++) {
+    const btn = document.createElement('div');
+    btn.id = 'calm-' + n;
+    btn.textContent = n;
+    btn.onclick = () => selectCalm(n);
+    btn.style.cssText = 'width:calc(10% - 6px);aspect-ratio:1;border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;color:var(--text-muted);transition:all 0.2s;';
+    calmGrid.appendChild(btn);
+  }
+
+  function selectCalm(n) {
+    for (let i = 1; i <= 10; i++) {
+      const btn = document.getElementById('calm-' + i);
+      if (!btn) continue;
+      btn.style.background = '';
+      btn.style.color = 'var(--text-muted)';
+      btn.style.borderColor = 'var(--border)';
+    }
+    const sel = document.getElementById('calm-' + n);
+    if (sel) {
+      const color = n >= 7 ? '#22c55e' : n >= 5 ? '#eab308' : '#ef4444';
+      sel.style.background = color + '22';
+      sel.style.color = color;
+      sel.style.borderColor = color;
+    }
+    const warn = document.getElementById('calm-warning');
+    if (warn) warn.style.display = n < 6 ? 'block' : 'none';
+    try { sessionStorage.setItem('calm_level', n); } catch(e){}
+  }
+
+  function saveJournal() {
+    const txt = document.getElementById('journal-entry').value;
+    try { sessionStorage.setItem('journal', txt); } catch(e){}
+  }
+
+  loadState();
+
+  // Load calm and journal after state
+  try {
+    const calm = sessionStorage.getItem('calm_level');
+    if (calm) selectCalm(parseInt(calm));
+    const journal = sessionStorage.getItem('journal');
+    if (journal) document.getElementById('journal-entry').value = journal;
+  } catch(e){}
+</script>
+</body>
+</html>
